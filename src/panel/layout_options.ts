@@ -1,43 +1,22 @@
 const options = {
-  name: 'cola',
-  animate: true, // whether to show the layout as it's running
-  refresh: 1, // number of ticks per frame; higher is faster but more jerky
-  maxSimulationTime: 3000, // max length in ms to run the layout
-  ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
-  fit: true, // set by controller // on every layout reposition of nodes, fit the viewport
-  padding: 90, // padding around the simulation
+  name: 'breadthfirst', // name of layout; e.g. cose, concentric, circle, grid, random, preset, null (null is used for compound nodes)
+  directed: false, // whether the tree is directed downwards (or edges can point in any direction if false)
+  padding: 90, // padding on fit
+  circle: false, // put depths in concentric circles if true, put depths top down if false
+  grid: false, // whether to create an even grid into which the DAG is placed (circle:false only)
+  spacingFactor: 1.75, // positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
   boundingBox: undefined as undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
-  nodeDimensionsIncludeLabels: false, // whether labels should be included in determining the space used by a node
-
-  // layout event callbacks
-  ready: function () {}, // on layoutready
-  stop: function () {}, // on layoutstop
-
-  // positioning options
-  randomize: false, // use random node positions at beginning of layout
-  avoidOverlap: true, // if true, prevents overlap of node bounding boxes
-  handleDisconnected: true, // if true, avoids disconnected components from overlapping
-  convergenceThreshold: 0.01, // when the alpha value (system energy) falls below this value, the layout stops
-  nodeSpacing: function (node: any) {
-    return 50;
-  }, // extra spacing around nodes
-  flow: undefined as undefined, // use DAG/tree flow layout if specified, e.g. { axis: 'y', minSeparation: 30 }
-  alignment: undefined as undefined, // relative alignment constraints on nodes, e.g. function( node ){ return { x: 0, y: 1 } }
-  gapInequalities: undefined as undefined, // list of inequality constraints for the gap between the nodes, e.g. [{"axis":"y", "left":node1, "right":node2, "gap":25}]
-
-  // different methods of specifying edge length
-  // each can be a constant numerical value or a function like `function( edge ){ return 2; }`
-  edgeLength: undefined as undefined, // sets edge length directly in simulation
-  edgeSymDiffLength: undefined as undefined, // symmetric diff edge length in simulation
-  edgeJaccardLength: undefined as undefined, // jaccard edge length in simulation
-
-  // iterations of cola algorithm; uses default values on undefined
-  unconstrIter: 50, // set by controller // unconstrained initial layout iterations
-  userConstIter: undefined as undefined, // initial layout iterations with user-specified constraints
-  allConstIter: undefined as undefined, // initial layout iterations with all constraints including non-overlap
-
-  // infinite layout options
-  infinite: false, // overrides all other options for a forces-all-the-time mode
+  avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
+  nodeDimensionsIncludeLabels: false, // Excludes the label when calculating node bounding boxes for the layout algorithm
+  roots: undefined as undefined, // the roots of the trees
+  depthSort: undefined as undefined, // a sorting function to order nodes at equal depth. e.g. function(a, b){ return a.data('weight') - b.data('weight') }
+  animate: false, // whether to transition the node positions
+  animationDuration: 500, // duration of animation in ms if enabled
+  animationEasing: undefined as undefined, // easing of animation if enabled,
+  animateFilter: function ( node: any, i: any ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
+  ready: undefined as undefined, // callback on layoutready
+  stop: undefined as undefined, // callback on layoutstop
+  transform: function (node: any, position: any ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
 };
 
 export default options;

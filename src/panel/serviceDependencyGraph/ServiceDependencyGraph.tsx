@@ -83,7 +83,7 @@ export class ServiceDependencyGraph extends PureComponent<PanelState, PanelState
       zoom: this.state.zoom,
       elements: this.props.data,
       layout: {
-        name: 'cola',
+        name: 'breadthfirst',
       },
       style: [
         {
