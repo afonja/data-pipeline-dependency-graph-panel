@@ -282,10 +282,12 @@ export default class CanvasDrawer {
   _drawEdges(ctx: CanvasRenderingContext2D, edges: cytoscape.EdgeSingular[], now: number) {
     const cy = this.cytoscape;
 
+    const selection = this.cytoscape.$(':selected');
+
     for (const edge of edges) {
       const sourcePoint = edge.sourceEndpoint();
       const targetPoint = edge.targetEndpoint();
-      this._drawEdgeLine(ctx, edge, sourcePoint, targetPoint);
+      this._drawEdgeLine(ctx, edge, sourcePoint, targetPoint, selection);
       this._drawEdgeParticles(ctx, edge, sourcePoint, targetPoint, now);
     }
 
@@ -301,16 +303,13 @@ export default class CanvasDrawer {
     ctx: CanvasRenderingContext2D,
     edge: cytoscape.EdgeSingular,
     sourcePoint: cytoscape.Position,
-    targetPoint: cytoscape.Position
+    targetPoint: cytoscape.Position,
+    selection: cytoscape.Collection
   ) {
     ctx.beginPath();
 
     ctx.moveTo(sourcePoint.x, sourcePoint.y);
     ctx.lineTo(targetPoint.x, targetPoint.y);
-
-    const metrics = edge.data('metrics');
-    const requestCount = _.get(metrics, 'normal', -1);
-    const errorCount = _.get(metrics, 'danger', -1);
 
     let base;
     if (!this.selectionNeighborhood.empty() && this.selectionNeighborhood.has(edge)) {
@@ -321,15 +320,19 @@ export default class CanvasDrawer {
       base = 80;
     }
 
-    if (requestCount >= 0 && errorCount >= 0) {
-      const range = 255;
+    ctx.strokeStyle = 'rgb(' + base + ',' + base + ',' + base + ')';
 
-      const factor = errorCount / requestCount;
-      const color = Math.min(255, base + range * Math.log2(factor + 1));
+    if (selection.length === 1) {
+      for (let i = 0; i < selection.length; i++) {
+        const selectedNode = selection[i];
 
-      ctx.strokeStyle = 'rgb(' + color + ',' + base + ',' + base + ')';
-    } else {
-      ctx.strokeStyle = 'rgb(' + base + ',' + base + ',' + base + ')';
+        if (edge.source().id() === selectedNode.id()) {
+          ctx.strokeStyle = 'rgb(0, 128, 128)';
+        }
+        else if (edge.target().id() === selectedNode.id()) {
+          ctx.strokeStyle = 'rgb(165, 42, 42)';
+        }
+      }
     }
 
     ctx.stroke();
