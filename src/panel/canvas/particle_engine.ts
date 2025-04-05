@@ -1,13 +1,11 @@
 import CanvasDrawer from './graph_canvas';
 import _ from 'lodash';
-import { Particles, Particle, IntGraphMetrics } from '../../types';
+import { Particles, Particle } from '../../types';
 
 export default class ParticleEngine {
   drawer: CanvasDrawer;
 
   maxVolume = 800;
-
-  minSpawnPropability = 0.004;
 
   spawnInterval: NodeJS.Timeout;
 
@@ -59,24 +57,11 @@ export default class ParticleEngine {
     const cy = this.drawer.cytoscape;
 
     const now = Date.now();
+    const delayInMs = 500; // Set the delay in milliseconds (e.g., 500ms)
+    const lastSpawnTimeKey = 'lastSpawnTime'; // Key to store the last spawn time for each edge
+
     cy.edges().forEach((edge) => {
       let particles: Particles = edge.data('particles');
-      const metrics: IntGraphMetrics = edge.data('metrics');
-
-      if (!metrics) {
-        return;
-      }
-
-      const rate = _.defaultTo(metrics.rate, 0);
-      const error_rate = _.defaultTo(metrics.error_rate, 0);
-      const volume = rate + error_rate;
-
-      let errorRate;
-      if (rate >= 0 && error_rate >= 0) {
-        errorRate = error_rate / rate;
-      } else {
-        errorRate = 0;
-      }
 
       if (particles === undefined) {
         particles = {
@@ -86,20 +71,22 @@ export default class ParticleEngine {
         edge.data('particles', particles);
       }
 
-      if (metrics && volume > 0) {
-        const spawnPropability = Math.min(volume / this.maxVolume, 1.0);
-        for (let i = 0; i < 5; i++) {
-          if (Math.random() <= spawnPropability + this.minSpawnPropability) {
-            const particle: Particle = {
-              velocity: 0.05 + Math.random() * 0.05,
-              startTime: now,
-            };
-            if (Math.random() < errorRate) {
-              particles.danger.push(particle);
-            } else {
-              particles.normal.push(particle);
-            }
-          }
+      // Get the last spawn time for this edge
+      const lastSpawnTime = edge.data(lastSpawnTimeKey) || 0;
+
+      // Check if enough time has passed since the last spawn
+      if (now - lastSpawnTime >= delayInMs) {
+        edge.data(lastSpawnTimeKey, now); // Update the last spawn time
+
+        const spawnRate = Math.ceil((100 / this.maxVolume) * 0.1); // Adjust spawn rate
+        const constantVelocity = 0.1; // Set a constant velocity for all particles
+
+        for (let i = 0; i < spawnRate; i++) {
+          const particle: Particle = {
+            velocity: constantVelocity, // Assign the constant velocity
+            startTime: now,
+          };
+            particles.normal.push(particle);
         }
       }
     });

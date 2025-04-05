@@ -1,6 +1,6 @@
 const options = {
   name: 'breadthfirst', // name of layout; e.g. cose, concentric, circle, grid, random, preset, null (null is used for compound nodes)
-  directed: false, // whether the tree is directed downwards (or edges can point in any direction if false)
+  directed: true, // whether the tree is directed downwards (or edges can point in any direction if false)
   padding: 90, // padding on fit
   circle: false, // put depths in concentric circles if true, put depths top down if false
   grid: false, // whether to create an even grid into which the DAG is placed (circle:false only)
